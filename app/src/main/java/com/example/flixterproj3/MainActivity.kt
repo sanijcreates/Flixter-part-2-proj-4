@@ -1,5 +1,6 @@
 package com.example.flixterproj3
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         val client = AsyncHttpClient()
         val apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         client.get(
-            "https://api.themoviedb.org/3/movie/now_playing?&api_key=$apiKey",
+            "https://api.themoviedb.org/3/movie/popular?&api_key=$apiKey",
             object : JsonHttpResponseHandler() {
                 override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
                     Log.d("sucess", json.toString())
@@ -35,17 +36,28 @@ class MainActivity : AppCompatActivity() {
                          val title = movieObject.getString("original_title")
                          val overview = movieObject.getString("overview")
                          val img = "https://image.tmdb.org/t/p/w500" + movieObject.getString("poster_path")
-                         Log.d("img", img)
-                         movies.add(Movie(title, overview, img))
-                        Log.d("single", title + " " + overview)
+                         val rating = movieObject.getString("vote_average")
+                         val releaseDate = movieObject.getString("release_date")
+                         val popularity = movieObject.getString("popularity")
+                         movies.add(Movie(title, overview, img, rating, releaseDate, popularity))
                      }
 
-                     val adapter = MovieAdapter(movies)
-                     recyclerView.adapter = adapter
+                     recyclerView.adapter = MovieAdapter(movies, this@MainActivity) { position->
+                         Log.d("posiiton", position.toString())
+                         val clickedItem = movies[position]
+                         val intent = Intent(this@MainActivity, DetailActivity::class.java)
+                         intent.putExtra("title", clickedItem.title)
+                         intent.putExtra("description", clickedItem.overview)
+                         intent.putExtra("image", clickedItem.img)
+                         intent.putExtra("rating", clickedItem.rating)
+                         intent.putExtra("popularity", clickedItem.popularity)
+                         intent.putExtra("releaseDate", clickedItem.releaseDate)
+                         Log.d("clickedItem", clickedItem.toString())
+                         startActivity(intent)
+                     }
                      recyclerView.layoutManager  = LinearLayoutManager(this@MainActivity)
 
-                    
-                     Log.d("ASda", resultsJson[1].toString())
+
 
                 }
 
